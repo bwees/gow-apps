@@ -4,9 +4,10 @@ Personal collection of [games-on-whales](https://github.com/games-on-whales/gow)
 
 ## Apps
 
-| App     | Variants       | Published image                               |
-| ------- | -------------- | --------------------------------------------- |
-| ryujinx | fedora, debian | `ghcr.io/bwees-forks/ryujinx-{fedora,debian}` |
+| App       | Variants       | Published image                           |
+| --------- | -------------- | ----------------------------------------- |
+| ryujinx   | fedora, debian | `ghcr.io/bwees/ryujinx-{fedora,debian}`   |
+| eglantine | fedora, debian | `ghcr.io/bwees/eglantine-{fedora,debian}` |
 
 ## Layout
 

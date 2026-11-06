@@ -29,6 +29,16 @@ jobs:
             build_dir: apps/ryujinx/build
             base_image: ghcr.io/games-on-whales/base-app:edge
             image_name: ryujinx-debian
+          - app: eglantine
+            variant: fedora
+            build_dir: apps/eglantine/build-fedora
+            base_image: ghcr.io/games-on-whales/base-app:fedora
+            image_name: eglantine-fedora
+          - app: eglantine
+            variant: debian
+            build_dir: apps/eglantine/build
+            base_image: ghcr.io/games-on-whales/base-app:edge
+            image_name: eglantine-debian
 
     steps:
       - uses: actions/checkout@v4
