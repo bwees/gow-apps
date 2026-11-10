@@ -31,6 +31,7 @@ RUN apt-get update && \
     apt-get install -y --no-install-recommends $REQUIRED_PACKAGES && \
     rm -rf /var/lib/apt/lists/*
 
+# renovate: datasource=forgejo-releases depName=projects/Ryubing
 ARG RYUJINX_VERSION=1.3.3
 RUN curl -fsSL --retry 5 --retry-all-errors --retry-delay 2 --retry-max-time 120 \
       -o /tmp/ryujinx.tar.gz \

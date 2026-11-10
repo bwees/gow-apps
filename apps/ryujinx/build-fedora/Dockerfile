@@ -24,6 +24,7 @@ RUN dnf install -y \
         fontconfig \
     && dnf clean all
 
+# renovate: datasource=forgejo-releases depName=projects/Ryubing
 ARG RYUJINX_VERSION=1.3.3
 RUN curl -fsSL --retry 5 --retry-all-errors --retry-delay 2 --retry-max-time 120 \
       -o /tmp/ryujinx.tar.gz \

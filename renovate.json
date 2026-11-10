@@ -1,0 +1,26 @@
+{
+  "$schema": "https://docs.renovatebot.com/renovate-schema.json",
+  "extends": ["github>home-operations/renovate-presets"],
+  "packageRules": [
+    {
+      "matchUpdateTypes": ["minor", "patch"],
+      "automerge": true
+    },
+    {
+      "matchUpdateTypes": ["major", "minor", "patch"],
+      "semanticCommitType": "chore"
+    },
+    {
+      "matchDepNames": ["Eglantine-Community/Eglantine"],
+      "allowedVersions": "/^v\\d+\\.\\d+\\.\\d+(-rc\\d+)?$/",
+      "ignoreUnstable": false,
+      "groupName": "eglantine"
+    },
+    {
+      "matchDepNames": ["projects/Ryubing"],
+      "registryUrls": ["https://git.ryujinx.app"],
+      "groupName": "ryujinx"
+    }
+  ],
+  "ignoreTests": true
+}

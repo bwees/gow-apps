@@ -22,6 +22,7 @@ RUN dnf install -y \
         freetype \
     && dnf clean all
 
+# renovate: datasource=github-releases depName=Eglantine-Community/Eglantine
 ARG EGLANTINE_RELEASE=v0.1.0-rc3
 RUN curl -fsSL --retry 5 --retry-all-errors --retry-delay 2 --retry-max-time 120 \
       -o /tmp/eglantine.AppImage \
