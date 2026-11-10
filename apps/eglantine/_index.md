@@ -1,6 +1,6 @@
 # Eglantine
 
-Experimental Nintendo Switch 2 emulator ([Djihads80/Eglantine](https://github.com/Djihads80/Eglantine),
+Experimental Nintendo Switch 2 emulator ([Eglantine-Community/Eglantine](https://github.com/Eglantine-Community/Eglantine),
 Eden/yuzu-derived) running in a Games-on-Whales container with GPU
 acceleration. Built from the upstream x86_64 AppImage, extracted to
 `/opt/eglantine`. Bump `EGLANTINE_RELEASE` in the Dockerfiles to update.

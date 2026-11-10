@@ -22,10 +22,10 @@ RUN dnf install -y \
         freetype \
     && dnf clean all
 
-ARG EGLANTINE_RELEASE=daily-20261105
+ARG EGLANTINE_RELEASE=v0.1.0-rc3
 RUN curl -fsSL --retry 5 --retry-all-errors --retry-delay 2 --retry-max-time 120 \
       -o /tmp/eglantine.AppImage \
-      "https://github.com/Djihads80/Eglantine/releases/download/${EGLANTINE_RELEASE}/eglantine-linux-x86_64.AppImage" && \
+      "https://github.com/Eglantine-Community/Eglantine/releases/download/${EGLANTINE_RELEASE}/eglantine-linux-x86_64.AppImage" && \
     chmod +x /tmp/eglantine.AppImage && \
     cd /tmp && ./eglantine.AppImage --appimage-extract >/dev/null && \
     mv /tmp/squashfs-root /opt/eglantine && \
