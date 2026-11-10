@@ -8,6 +8,7 @@ Personal collection of [games-on-whales](https://github.com/games-on-whales/gow)
 | --------- | -------------- | ----------------------------------------- |
 | ryujinx   | fedora, debian | `ghcr.io/bwees/ryujinx-{fedora,debian}`   |
 | eglantine | fedora, debian | `ghcr.io/bwees/eglantine-{fedora,debian}` |
+| lichii    | fedora, debian | `ghcr.io/bwees/lichii-{fedora,debian}`    |
 
 ## Layout
 

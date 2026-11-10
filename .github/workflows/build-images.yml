@@ -39,6 +39,16 @@ jobs:
             build_dir: apps/eglantine/build
             base_image: ghcr.io/games-on-whales/base-app:edge
             image_name: eglantine-debian
+          - app: lichii
+            variant: fedora
+            build_dir: apps/lichii/build-fedora
+            base_image: ghcr.io/games-on-whales/base-app:fedora
+            image_name: lichii-fedora
+          - app: lichii
+            variant: debian
+            build_dir: apps/lichii/build
+            base_image: ghcr.io/games-on-whales/base-app:edge
+            image_name: lichii-debian
 
     steps:
       - uses: actions/checkout@v4
