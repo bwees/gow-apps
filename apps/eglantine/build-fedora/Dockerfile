@@ -35,6 +35,8 @@ RUN curl -fsSL --retry 5 --retry-all-errors --retry-delay 2 --retry-max-time 120
 
 RUN mkdir -m 0755 /games
 
+RUN echo 'for_window [class="Eglantine" title="^Eglantine [|]"] fullscreen enable' >> /cfg/sway/config
+
 COPY --chmod=777 scripts/startup.sh /opt/gow/startup-app.sh
 
 ENV XDG_RUNTIME_DIR=/tmp/.X11-unix
