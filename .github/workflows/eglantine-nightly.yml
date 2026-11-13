@@ -1,0 +1,96 @@
+name: eglantine-nightly
+
+on:
+  schedule:
+    - cron: "0 */6 * * *"
+  push:
+    branches: [main]
+    paths:
+      - "apps/eglantine/**"
+      - ".github/workflows/eglantine-nightly.yml"
+  workflow_dispatch:
+
+env:
+  UPSTREAM_REPO: Eglantine-Community/Eglantine
+  DAILY_TAG_PATTERN: '^daily-[0-9]{8}$'
+
+jobs:
+  resolve:
+    runs-on: ubuntu-latest
+    outputs:
+      release: ${{ steps.release.outputs.tag }}
+    steps:
+      - id: release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          tag=$(gh release list -R "$UPSTREAM_REPO" --limit 50 --json tagName,publishedAt \
+            --jq "[.[] | select(.tagName | test(\"$DAILY_TAG_PATTERN\"))] | sort_by(.publishedAt) | last | .tagName")
+          test -n "$tag"
+          echo "tag=$tag" >> "$GITHUB_OUTPUT"
+
+  build:
+    needs: resolve
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - variant: fedora
+            build_dir: apps/eglantine/build-fedora
+            base_image: ghcr.io/games-on-whales/base-app:fedora
+            image_name: eglantine-fedora
+          - variant: debian
+            build_dir: apps/eglantine/build
+            base_image: ghcr.io/games-on-whales/base-app:edge
+            image_name: eglantine-debian
+
+    env:
+      IMAGE: ghcr.io/${{ github.repository_owner }}/${{ matrix.image_name }}:${{ needs.resolve.outputs.release }}
+
+    steps:
+      # Scheduled runs only build new upstream dailies; pushes rebuild so app changes land in the current nightly.
+      - id: existing
+        if: github.event_name == 'schedule'
+        run: |
+          if docker buildx imagetools inspect "$IMAGE" >/dev/null 2>&1; then
+            echo "built=true" >> "$GITHUB_OUTPUT"
+          fi
+
+      - if: steps.existing.outputs.built != 'true'
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
+
+      - if: steps.existing.outputs.built != 'true'
+        uses: docker/setup-buildx-action@v3
+
+      - if: steps.existing.outputs.built != 'true'
+        name: Log in to GHCR
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.repository_owner }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - if: steps.existing.outputs.built != 'true'
+        name: Build & push ${{ env.IMAGE }}
+        uses: docker/build-push-action@10e90e3645eae34f1e60eeb005ba3a3d33f178e8 # v6.19.2
+        with:
+          context: ${{ matrix.build_dir }}
+          push: true
+          build-args: |
+            BASE_APP_IMAGE=${{ matrix.base_image }}
+            EGLANTINE_RELEASE=${{ needs.resolve.outputs.release }}
+            IMAGE_SOURCE=https://github.com/${{ github.repository }}
+          tags: |
+            ${{ env.IMAGE }}
+            ghcr.io/${{ github.repository_owner }}/${{ matrix.image_name }}:nightly
+          cache-from: type=gha,scope=${{ matrix.image_name }}-nightly
+          cache-to: type=gha,scope=${{ matrix.image_name }}-nightly,mode=max
+          labels: |
+            org.opencontainers.image.source=https://github.com/${{ github.repository }}
+            org.opencontainers.image.revision=${{ github.sha }}
+            org.opencontainers.image.version=${{ needs.resolve.outputs.release }}
