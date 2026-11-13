@@ -7,30 +7,28 @@ gow_log "Starting Eglantine"
 
 QT_CONFIG="$HOME/.config/eglantine/qt-config.ini"
 MARIO_KART_WORLD_SHADER_DIR="$HOME/.cache/eglantine/shader/0400c3f00006e000"
+BORDERLESS_FULLSCREEN_MODE=0
 
 # Eglantine creates this cache dir non-recursively and runs without a shader cache when that fails
 mkdir -p "$MARIO_KART_WORLD_SHADER_DIR"
 
-set_ui_setting() {
-  KEY="$1" VALUE="$2" awk '
-    BEGIN { key = ENVIRON["KEY"]; value = ENVIRON["VALUE"] }
+set_setting() {
+  grep -qxF "[$1]" "$QT_CONFIG" || printf '\n[%s]\n' "$1" >> "$QT_CONFIG"
+  SECTION="[$1]" KEY="$2" VALUE="$3" awk '
+    BEGIN { target = ENVIRON["SECTION"]; key = ENVIRON["KEY"]; value = ENVIRON["VALUE"] }
     /^\[/ { section = $0 }
-    section == "[UI]" && (index($0, key "=") == 1 || index($0, key "\\default=") == 1) { next }
+    section == target && (index($0, key "=") == 1 || index($0, key "\\default=") == 1) { next }
     { print }
-    $0 == "[UI]" { print key "\\default=false"; print key "=" value }
+    $0 == target { print key "\\default=false"; print key "=" value }
   ' "$QT_CONFIG" > "$QT_CONFIG.tmp"
   mv "$QT_CONFIG.tmp" "$QT_CONFIG"
 }
 
-if [ ! -f "$QT_CONFIG" ]; then
-  mkdir -p "$(dirname "$QT_CONFIG")"
-  printf '[UI]\n' > "$QT_CONFIG"
-elif ! grep -q '^\[UI\]$' "$QT_CONFIG"; then
-  printf '\n[UI]\n' >> "$QT_CONFIG"
-fi
-set_ui_setting 'fullscreen' 'true'
-# Leaving fullscreen inside sway's fullscreen window leaves the old frame on screen
-set_ui_setting 'Shortcuts\Main%20Window\Exit%20Fullscreen\KeySeq' ''
+mkdir -p "$(dirname "$QT_CONFIG")"
+touch "$QT_CONFIG"
+set_setting 'UI' 'fullscreen' 'true'
+# Exclusive fullscreen leaves the game drawn at a stale window size after exiting fullscreen
+set_setting 'Renderer' 'fullscreen_mode' "$BORDERLESS_FULLSCREEN_MODE"
 
 export QT_QPA_PLATFORM=xcb
 
