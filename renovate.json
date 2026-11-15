@@ -12,7 +12,7 @@
     },
     {
       "matchDepNames": ["Eglantine-Community/Eglantine"],
-      "allowedVersions": "/^v\\d+\\.\\d+\\.\\d+(-rc\\d+)?$/",
+      "allowedVersions": "/^v\\d+\\.\\d+\\.\\d+(-[0-9A-Za-z.]+)?$/",
       "ignoreUnstable": false,
       "groupName": "eglantine"
     },
@@ -20,6 +20,11 @@
       "matchDepNames": ["projects/Ryubing"],
       "registryUrls": ["https://git.ryujinx.app"],
       "groupName": "ryujinx"
+    },
+    {
+      "matchDepNames": ["Eglantine-Community/Eglantine", "projects/Ryubing"],
+      "matchUpdateTypes": ["major", "minor", "patch"],
+      "automerge": true
     }
   ],
   "ignoreTests": true
