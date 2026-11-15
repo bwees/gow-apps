@@ -23,7 +23,7 @@ RUN dnf install -y \
     && dnf clean all
 
 # renovate: datasource=github-releases depName=Eglantine-Community/Eglantine
-ARG EGLANTINE_RELEASE=v0.1.0-rc3
+ARG EGLANTINE_RELEASE=v0.1.0-rc4
 RUN curl -fsSL --retry 5 --retry-all-errors --retry-delay 2 --retry-max-time 120 \
       -o /tmp/eglantine.AppImage \
       "https://github.com/Eglantine-Community/Eglantine/releases/download/${EGLANTINE_RELEASE}/eglantine-linux-x86_64.AppImage" && \
