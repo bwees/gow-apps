@@ -24,24 +24,34 @@ jobs:
             build_dir: apps/ryujinx/build-fedora
             base_image: ghcr.io/games-on-whales/base-app:fedora
             image_name: ryujinx-fedora
+            version_arg: RYUJINX_VERSION
           - app: ryujinx
             variant: debian
             build_dir: apps/ryujinx/build
             base_image: ghcr.io/games-on-whales/base-app:edge
             image_name: ryujinx-debian
+            version_arg: RYUJINX_VERSION
           - app: eglantine
             variant: fedora
             build_dir: apps/eglantine/build-fedora
             base_image: ghcr.io/games-on-whales/base-app:fedora
             image_name: eglantine-fedora
+            version_arg: EGLANTINE_RELEASE
           - app: eglantine
             variant: debian
             build_dir: apps/eglantine/build
             base_image: ghcr.io/games-on-whales/base-app:edge
             image_name: eglantine-debian
+            version_arg: EGLANTINE_RELEASE
 
     steps:
       - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
+
+      - id: version
+        run: |
+          version=$(sed -n "s/^ARG ${{ matrix.version_arg }}=//p" "${{ matrix.build_dir }}/Dockerfile")
+          test -n "$version"
+          echo "version=$version" >> "$GITHUB_OUTPUT"
 
       - uses: docker/setup-buildx-action@8d2750c68a42422c14e847fe6c8ac0403b4cbd6f # v3.12.0
 
@@ -63,8 +73,56 @@ jobs:
           tags: |
             ghcr.io/${{ github.repository_owner }}/${{ matrix.image_name }}:latest
             ghcr.io/${{ github.repository_owner }}/${{ matrix.image_name }}:${{ github.sha }}
+            ghcr.io/${{ github.repository_owner }}/${{ matrix.image_name }}:${{ steps.version.outputs.version }}
           cache-from: type=gha,scope=${{ matrix.image_name }}
           cache-to: type=gha,scope=${{ matrix.image_name }},mode=max
           labels: |
             org.opencontainers.image.source=https://github.com/${{ github.repository }}
             org.opencontainers.image.revision=${{ github.sha }}
+            org.opencontainers.image.version=${{ steps.version.outputs.version }}
+
+  release:
+    needs: build
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - app: ryujinx
+            dockerfile: apps/ryujinx/build-fedora/Dockerfile
+            version_arg: RYUJINX_VERSION
+            upstream: https://git.ryujinx.app/projects/Ryubing/releases/tag
+          - app: eglantine
+            dockerfile: apps/eglantine/build-fedora/Dockerfile
+            version_arg: EGLANTINE_RELEASE
+            upstream: https://github.com/Eglantine-Community/Eglantine/releases/tag
+
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
+
+      - name: Release ${{ matrix.app }}
+        env:
+          GH_TOKEN: ${{ github.token }}
+          APP: ${{ matrix.app }}
+          UPSTREAM: ${{ matrix.upstream }}
+          REGISTRY: ghcr.io/${{ github.repository_owner }}
+        run: |
+          version=$(sed -n "s/^ARG ${{ matrix.version_arg }}=//p" "${{ matrix.dockerfile }}")
+          test -n "$version"
+          tag="$APP-$version"
+          if gh release view "$tag" >/dev/null 2>&1; then
+            echo "$tag already released"
+            exit 0
+          fi
+          prerelease=()
+          if [[ "$version" == *-* ]]; then
+            prerelease=(--prerelease)
+          fi
+          gh release create "$tag" "${prerelease[@]}" \
+            --target "$GITHUB_SHA" \
+            --title "$APP $version" \
+            --notes "$(printf 'Upstream: %s/%s\n\nImages:\n- `%s/%s-fedora:%s`\n- `%s/%s-debian:%s`\n' \
+              "$UPSTREAM" "$version" "$REGISTRY" "$APP" "$version" "$REGISTRY" "$APP" "$version")"
